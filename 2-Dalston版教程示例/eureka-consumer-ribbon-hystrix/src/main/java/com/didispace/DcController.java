@@ -1,9 +1,7 @@
 package com.didispace;
 
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
-import com.netflix.ribbon.proxy.annotation.Hystrix;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -21,7 +19,7 @@ public class DcController {
     ConsumerService consumerService;
 
     @GetMapping("/consumer")
-    public String dc() {
+    public String dc() throws InterruptedException {
         return consumerService.consumer();
     }
 
@@ -31,8 +29,9 @@ public class DcController {
         @Autowired
         RestTemplate restTemplate;
 
-        @HystrixCommand(fallbackMethod = "fallback")
-        public String consumer() {
+        @HystrixCommand(groupKey = "spring-cloud",commandKey = "spring-cloud",threadPoolKey = "spring-cloud",fallbackMethod = "fallback")
+        public String consumer() throws InterruptedException {
+//            Thread.sleep(5000);
             return restTemplate.getForObject("http://eureka-client/dc", String.class);
         }
 
